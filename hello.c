@@ -18,8 +18,15 @@ typedef enum {
               DIRECTION_RIGHT
 } SNAKE_DIRECTION;
 
-typedef struct {
+struct snake_part_struct;
+
+typedef struct snake_part_struct {
   int row, col;
+  struct snake_part_struct* next;
+} snake_part;
+
+typedef struct {
+  snake_part head;
   SNAKE_DIRECTION direction;
 } snake_info;
 
@@ -31,18 +38,27 @@ void draw_cell(int row, int col, gfx_config* cfg) {
 }
 
 void update_snake(snake_info* snake) {
+  // Update snake body parts
+  snake_part* current = &snake->head;
+  while (current->next != NULL) {
+    current->next->row = current->row;
+    current->next->col = current->col;
+    current = current->next;
+  }
+
+  // Update snake head!
   switch (snake->direction) {
   case DIRECTION_UP:
-    snake->row--;
+    snake->head.row--;
     break;
   case DIRECTION_DOWN:
-    snake->row++;
+    snake->head.row++;
     break;
   case DIRECTION_LEFT:
-    snake->col--;
+    snake->head.col--;
     break;
   case DIRECTION_RIGHT:
-    snake->col++;
+    snake->head.col++;
     break;
   }
 }
@@ -76,8 +92,9 @@ int main()
     g.snake_color = al_map_rgb(0, 255, 50);
 
     snake_info snake = {0};
-    snake.row = 13;
-    snake.col = 15;
+    snake.head.row = 13;
+    snake.head.col = 15;
+    snake.head.next = NULL;
     snake.direction = DIRECTION_DOWN;
 
     al_start_timer(timer);
@@ -131,7 +148,11 @@ int main()
           al_clear_to_color(al_map_rgb(0, 0, 0));
           // al_draw_text(font, al_map_rgb(255, 255, 255), 0, 0, 0, "Hello world!");
 
-          draw_cell(snake.row, snake.col, &g);
+          snake_part* current = &snake.head;
+          do {
+            draw_cell(current->row, current->col, &g);
+            current = current->next;
+          } while(current != NULL);
             
           al_flip_display();
 
