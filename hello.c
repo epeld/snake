@@ -93,8 +93,37 @@ int main()
             printf("Bad timer event source\n");
             break;
           }
-        }
-        else if((event.type == ALLEGRO_EVENT_KEY_DOWN) || (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE)) {
+        } else if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
+          int stop = 0;
+          switch (event.keyboard.keycode) {
+          case ALLEGRO_KEY_LEFT:
+            if (snake.direction != DIRECTION_RIGHT) {
+              snake.direction = DIRECTION_LEFT;
+            }
+            break;
+          case ALLEGRO_KEY_RIGHT:
+            if (snake.direction != DIRECTION_LEFT) {
+              snake.direction = DIRECTION_RIGHT;
+            }
+            break;
+          case ALLEGRO_KEY_UP:
+            if (snake.direction != DIRECTION_DOWN) {
+              snake.direction = DIRECTION_UP;
+            }
+            break;
+          case ALLEGRO_KEY_DOWN:
+            if (snake.direction != DIRECTION_UP) {
+              snake.direction = DIRECTION_DOWN;
+            }
+            break;
+          case ALLEGRO_KEY_ESCAPE:
+            stop = 1;
+            break;
+          }
+          if (stop) {
+            break;
+          }
+        } else if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
           break;
         }
 
