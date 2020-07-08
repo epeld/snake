@@ -4,6 +4,20 @@
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_primitives.h>
 
+typedef struct {
+  int cell_width;
+  int cell_height;
+
+  ALLEGRO_COLOR snake_color;
+} gfx_config;
+
+void draw_cell(int row, int col, gfx_config* cfg) {
+  int y = row * cfg->cell_height;
+  int x = col * cfg->cell_width;
+
+  al_draw_filled_rectangle(x, y, x + cfg->cell_width, y + cfg->cell_height, cfg->snake_color);
+}
+
 int main()
 {
     al_init();
@@ -24,6 +38,14 @@ int main()
     bool redraw = true;
     ALLEGRO_EVENT event;
 
+    const int NUM_COLS = 50;
+    const int NUM_ROWS = 50;
+
+    gfx_config g = {0};
+    g.cell_width = al_get_display_width(disp) / NUM_COLS;
+    g.cell_height = al_get_display_height(disp) / NUM_ROWS;
+    g.snake_color = al_map_rgb(0, 255, 50);
+
     al_start_timer(timer);
     while(1)
     {
@@ -38,7 +60,10 @@ int main()
         {
             al_clear_to_color(al_map_rgb(0, 0, 0));
             al_draw_text(font, al_map_rgb(255, 255, 255), 0, 0, 0, "Hello world!");
-            al_draw_filled_rectangle(10,30,100,150, al_map_rgb(0, 255, 50));
+
+            draw_cell(13, 5, &g);
+            draw_cell(13, 7, &g);
+            
             al_flip_display();
 
             redraw = false;
