@@ -4,6 +4,8 @@
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_primitives.h>
 
+#define MAX_SNAKE_PARTS 200
+
 typedef struct {
   int cell_width;
   int cell_height;
@@ -22,11 +24,11 @@ struct snake_part_struct;
 
 typedef struct snake_part_struct {
   int row, col;
-  struct snake_part_struct* next;
 } snake_part;
 
 typedef struct {
-  snake_part head;
+  int tail_length;
+  snake_part parts[MAX_SNAKE_PARTS];
   SNAKE_DIRECTION direction;
 } snake_info;
 
@@ -37,28 +39,41 @@ void draw_cell(int row, int col, gfx_config* cfg) {
   al_draw_filled_rectangle(x, y, x + cfg->cell_width, y + cfg->cell_height, cfg->snake_color);
 }
 
+void grow_snake(snake_info* snake) {
+  if (snake->tail_length + 1 >= MAX_SNAKE_PARTS) {
+    fprintf(stderr, "max snake size reached\n");
+    return;
+  }
+  snake->tail_length++;
+  snake_part* end = snake->parts + snake->tail_length;
+  snake_part* prev_end = snake->parts + snake->tail_length - 1;
+  end->row = prev_end->row;
+  end->col = prev_end->col;
+}
+
 void update_snake(snake_info* snake) {
   // Update snake body parts
-  snake_part* current = &snake->head;
-  while (current->next != NULL) {
-    current->next->row = current->row;
-    current->next->col = current->col;
-    current = current->next;
+  for (int i = snake->tail_length - 1; 0 < i; i--) {
+    snake_part* prev = snake->parts + i - 1;
+    snake_part* current = snake->parts + i;
+
+    current->row = prev->row;
+    current->col = prev->col;
   }
 
-  // Update snake head!
+  // Update snake parts[0]!
   switch (snake->direction) {
   case DIRECTION_UP:
-    snake->head.row--;
+    snake->parts[0].row--;
     break;
   case DIRECTION_DOWN:
-    snake->head.row++;
+    snake->parts[0].row++;
     break;
   case DIRECTION_LEFT:
-    snake->head.col--;
+    snake->parts[0].col--;
     break;
   case DIRECTION_RIGHT:
-    snake->head.col++;
+    snake->parts[0].col++;
     break;
   }
 }
@@ -92,10 +107,10 @@ int main()
     g.snake_color = al_map_rgb(0, 255, 50);
 
     snake_info snake = {0};
-    snake.head.row = 13;
-    snake.head.col = 15;
-    snake.head.next = NULL;
+    snake.parts[0].row = 13;
+    snake.parts[0].col = 15;
     snake.direction = DIRECTION_DOWN;
+    snake.tail_length = 1;
 
     al_start_timer(timer);
     while(1)
@@ -148,11 +163,10 @@ int main()
           al_clear_to_color(al_map_rgb(0, 0, 0));
           // al_draw_text(font, al_map_rgb(255, 255, 255), 0, 0, 0, "Hello world!");
 
-          snake_part* current = &snake.head;
-          do {
+          for (int i = 0; i < snake.tail_length; i++) {
+            snake_part* current = snake.parts + i;
             draw_cell(current->row, current->col, &g);
-            current = current->next;
-          } while(current != NULL);
+          }
             
           al_flip_display();
 
