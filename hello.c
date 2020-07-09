@@ -6,6 +6,9 @@
 
 #define MAX_SNAKE_PARTS 200
 
+const int NUM_COLS = 50;
+const int NUM_ROWS = 50;
+
 typedef struct {
   int cell_width;
   int cell_height;
@@ -38,6 +41,11 @@ void draw_cell(int row, int col, gfx_config* cfg, ALLEGRO_COLOR color) {
   int x = col * cfg->cell_width;
 
   al_draw_filled_rectangle(x, y, x + cfg->cell_width, y + cfg->cell_height, color);
+}
+
+void randomize_position(snake_part* part) {
+  part->row = rand() % NUM_ROWS;
+  part->col = rand() % NUM_COLS;
 }
 
 void grow_snake(snake_info* snake) {
@@ -99,9 +107,6 @@ int main()
     bool redraw = true;
     ALLEGRO_EVENT event;
 
-    const int NUM_COLS = 50;
-    const int NUM_ROWS = 50;
-
     gfx_config g = {0};
     g.cell_width = al_get_display_width(disp) / NUM_COLS;
     g.cell_height = al_get_display_height(disp) / NUM_ROWS;
@@ -125,6 +130,10 @@ int main()
 
         if(event.type == ALLEGRO_EVENT_TIMER) {
           if (event.timer.source == timer) {
+            if (apple.row == snake.parts[0].row && apple.col == snake.parts[0].col) {
+              randomize_position(&apple);
+              grow_snake(&snake);
+            }
             update_snake(&snake);
             redraw = true;
           } else {
