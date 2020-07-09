@@ -6,7 +6,7 @@
 
 #define MAX_SNAKE_PARTS 200
 
-const int NUM_COLS = 50;
+const int NUM_COLS = 80;
 const int NUM_ROWS = 50;
 
 typedef struct {
