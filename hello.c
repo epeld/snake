@@ -11,6 +11,7 @@ typedef struct {
   int cell_height;
 
   ALLEGRO_COLOR snake_color;
+  ALLEGRO_COLOR apple_color;
 } gfx_config;
 
 typedef enum {
@@ -32,11 +33,11 @@ typedef struct {
   SNAKE_DIRECTION direction;
 } snake_info;
 
-void draw_cell(int row, int col, gfx_config* cfg) {
+void draw_cell(int row, int col, gfx_config* cfg, ALLEGRO_COLOR color) {
   int y = row * cfg->cell_height;
   int x = col * cfg->cell_width;
 
-  al_draw_filled_rectangle(x, y, x + cfg->cell_width, y + cfg->cell_height, cfg->snake_color);
+  al_draw_filled_rectangle(x, y, x + cfg->cell_width, y + cfg->cell_height, color);
 }
 
 void grow_snake(snake_info* snake) {
@@ -105,12 +106,17 @@ int main()
     g.cell_width = al_get_display_width(disp) / NUM_COLS;
     g.cell_height = al_get_display_height(disp) / NUM_ROWS;
     g.snake_color = al_map_rgb(0, 255, 50);
+    g.apple_color = al_map_rgb(255, 0, 50);
 
     snake_info snake = {0};
     snake.parts[0].row = 13;
     snake.parts[0].col = 15;
     snake.direction = DIRECTION_DOWN;
     snake.tail_length = 1;
+
+    snake_part apple = {0};
+    apple.row = 20;
+    apple.col = 22;
 
     al_start_timer(timer);
     while(1)
@@ -165,8 +171,10 @@ int main()
 
           for (int i = 0; i < snake.tail_length; i++) {
             snake_part* current = snake.parts + i;
-            draw_cell(current->row, current->col, &g);
+            draw_cell(current->row, current->col, &g, g.snake_color);
           }
+
+          draw_cell(apple.row, apple.col, &g, g.apple_color);
             
           al_flip_display();
 
