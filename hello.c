@@ -39,6 +39,21 @@ typedef struct {
   int pending_direction_count;
 } snake_info;
 
+typedef enum {
+              STATE_MENU = 1,
+              STATE_GAME
+} GAME_STATE;
+
+typedef struct game_state_struct {
+  snake_part apple;
+  snake_info snake;
+} game_state;
+
+typedef struct app_state_struct {
+  GAME_STATE state;
+  game_state game;
+} app_state;
+
 void draw_cell(int row, int col, gfx_config* cfg, ALLEGRO_COLOR color) {
   int y = row * cfg->cell_height;
   int x = col * cfg->cell_width;
@@ -158,16 +173,18 @@ int main()
     g.snake_color = al_map_rgb(0, 255, 50);
     g.apple_color = al_map_rgb(255, 0, 50);
 
-    snake_info snake = {0};
-    snake.parts[0].row = 13;
-    snake.parts[0].col = 15;
-    snake.direction = DIRECTION_DOWN;
-    snake.tail_length = 1;
-    snake.pending_direction_count = 0;
+    // Init the app state
+    app_state app = {0};
+    app.state = STATE_GAME;
 
-    snake_part apple = {0};
-    apple.row = 20;
-    apple.col = 22;
+    app.game.snake.parts[0].row = 13;
+    app.game.snake.parts[0].col = 15;
+    app.game.snake.direction = DIRECTION_DOWN;
+    app.game.snake.tail_length = 1;
+    app.game.snake.pending_direction_count = 0;
+
+    app.game.apple.row = 20;
+    app.game.apple.col = 22;
 
     al_start_timer(timer);
     while(1) {
@@ -175,11 +192,16 @@ int main()
 
         if(event.type == ALLEGRO_EVENT_TIMER) {
           if (event.timer.source == timer) {
-            if (apple.row == snake.parts[0].row && apple.col == snake.parts[0].col) {
-              randomize_position(&apple);
-              grow_snake(&snake);
+            if (app.state == STATE_GAME) {
+              game_state* game = &app.game;
+              if (game->apple.row == game->snake.parts[0].row && game->apple.col == game->snake.parts[0].col) {
+                randomize_position(&game->apple);
+                grow_snake(&game->snake);
+              }
+              update_snake(&game->snake);
+            } else if (app.state == STATE_MENU) {
+              // TODO
             }
-            update_snake(&snake);
             redraw = true;
           } else {
             printf("Bad timer event source\n");
@@ -187,22 +209,25 @@ int main()
           }
         } else if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
           int stop = 0;
-          switch (event.keyboard.keycode) {
-          case ALLEGRO_KEY_LEFT:
-            push_direction_change(&snake, DIRECTION_LEFT);
-            break;
-          case ALLEGRO_KEY_RIGHT:
-            push_direction_change(&snake, DIRECTION_RIGHT);
-            break;
-          case ALLEGRO_KEY_UP:
-            push_direction_change(&snake, DIRECTION_UP);
-            break;
-          case ALLEGRO_KEY_DOWN:
-            push_direction_change(&snake, DIRECTION_DOWN);
-            break;
-          case ALLEGRO_KEY_ESCAPE:
-            stop = 1;
-            break;
+          if (app.state == STATE_GAME) {
+            game_state* game = &app.game;
+            switch (event.keyboard.keycode) {
+            case ALLEGRO_KEY_LEFT:
+              push_direction_change(&game->snake, DIRECTION_LEFT);
+              break;
+            case ALLEGRO_KEY_RIGHT:
+              push_direction_change(&game->snake, DIRECTION_RIGHT);
+              break;
+            case ALLEGRO_KEY_UP:
+              push_direction_change(&game->snake, DIRECTION_UP);
+              break;
+            case ALLEGRO_KEY_DOWN:
+              push_direction_change(&game->snake, DIRECTION_DOWN);
+              break;
+            case ALLEGRO_KEY_ESCAPE:
+              stop = 1;
+              break;
+            }
           }
           if (stop) {
             break;
@@ -215,12 +240,15 @@ int main()
           al_clear_to_color(al_map_rgb(0, 0, 0));
           // al_draw_text(font, al_map_rgb(255, 255, 255), 0, 0, 0, "Hello world!");
 
-          for (int i = 0; i < snake.tail_length; i++) {
-            snake_part* current = snake.parts + i;
-            draw_cell(current->row, current->col, &g, g.snake_color);
-          }
+          if (app.state == STATE_GAME) {
+            game_state* game = &app.game;
+            for (int i = 0; i < game->snake.tail_length; i++) {
+              snake_part* current = game->snake.parts + i;
+              draw_cell(current->row, current->col, &g, g.snake_color);
+            }
 
-          draw_cell(apple.row, apple.col, &g, g.apple_color);
+            draw_cell(game->apple.row, game->apple.col, &g, g.apple_color);
+          }
             
           al_flip_display();
 
