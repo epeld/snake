@@ -170,8 +170,7 @@ int main()
     apple.col = 22;
 
     al_start_timer(timer);
-    while(1)
-    {
+    while(1) {
         al_wait_for_event(queue, &event);
 
         if(event.type == ALLEGRO_EVENT_TIMER) {
