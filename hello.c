@@ -147,6 +147,40 @@ void update_snake(snake_info* snake) {
   }
 }
 
+void update_game(game_state* game) {
+  if (game->apple.row == game->snake.parts[0].row && game->apple.col == game->snake.parts[0].col) {
+    randomize_position(&game->apple);
+    grow_snake(&game->snake);
+  }
+  update_snake(&game->snake);
+}
+
+int handle_game_input(game_state* game, ALLEGRO_EVENT* event) {
+  switch (event->keyboard.keycode) {
+  case ALLEGRO_KEY_LEFT:
+    push_direction_change(&game->snake, DIRECTION_LEFT);
+    break;
+  case ALLEGRO_KEY_RIGHT:
+    push_direction_change(&game->snake, DIRECTION_RIGHT);
+    break;
+  case ALLEGRO_KEY_UP:
+    push_direction_change(&game->snake, DIRECTION_UP);
+    break;
+  case ALLEGRO_KEY_DOWN:
+    push_direction_change(&game->snake, DIRECTION_DOWN);
+    break;
+  }
+}
+
+void draw_game(game_state* game, gfx_config* g) {
+  for (int i = 0; i < game->snake.tail_length; i++) {
+    snake_part* current = game->snake.parts + i;
+    draw_cell(current->row, current->col, g, g->snake_color);
+  }
+
+  draw_cell(game->apple.row, game->apple.col, g, g->apple_color);
+}
+
 int main()
 {
     al_init();
@@ -193,12 +227,7 @@ int main()
         if(event.type == ALLEGRO_EVENT_TIMER) {
           if (event.timer.source == timer) {
             if (app.state == STATE_GAME) {
-              game_state* game = &app.game;
-              if (game->apple.row == game->snake.parts[0].row && game->apple.col == game->snake.parts[0].col) {
-                randomize_position(&game->apple);
-                grow_snake(&game->snake);
-              }
-              update_snake(&game->snake);
+              update_game(&app.game);
             } else if (app.state == STATE_MENU) {
               // TODO
             }
@@ -208,28 +237,12 @@ int main()
             break;
           }
         } else if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
-          int stop = 0;
           if (app.state == STATE_GAME) {
-            game_state* game = &app.game;
-            switch (event.keyboard.keycode) {
-            case ALLEGRO_KEY_LEFT:
-              push_direction_change(&game->snake, DIRECTION_LEFT);
-              break;
-            case ALLEGRO_KEY_RIGHT:
-              push_direction_change(&game->snake, DIRECTION_RIGHT);
-              break;
-            case ALLEGRO_KEY_UP:
-              push_direction_change(&game->snake, DIRECTION_UP);
-              break;
-            case ALLEGRO_KEY_DOWN:
-              push_direction_change(&game->snake, DIRECTION_DOWN);
-              break;
-            case ALLEGRO_KEY_ESCAPE:
-              stop = 1;
-              break;
-            }
+            handle_game_input(&app.game, &event);
+          } else if (app.state == STATE_MENU) {
+            // TODO
           }
-          if (stop) {
+          if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
             break;
           }
         } else if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
@@ -241,13 +254,9 @@ int main()
           // al_draw_text(font, al_map_rgb(255, 255, 255), 0, 0, 0, "Hello world!");
 
           if (app.state == STATE_GAME) {
-            game_state* game = &app.game;
-            for (int i = 0; i < game->snake.tail_length; i++) {
-              snake_part* current = game->snake.parts + i;
-              draw_cell(current->row, current->col, &g, g.snake_color);
-            }
-
-            draw_cell(game->apple.row, game->apple.col, &g, g.apple_color);
+            draw_game(&app.game, &g);
+          } else if (app.state == STATE_MENU) {
+            // TODO
           }
             
           al_flip_display();
