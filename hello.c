@@ -181,6 +181,15 @@ void draw_game(game_state* game, gfx_config* g) {
   draw_cell(game->apple.row, game->apple.col, g, g->apple_color);
 }
 
+void draw_menu(ALLEGRO_FONT* font, gfx_config* g) {
+  const char* text = "This is the menu!";
+  ALLEGRO_COLOR color = al_map_rgb(255, 255, 255);
+
+  int x = g->cell_width * (NUM_COLS / 2.0f);
+  int y = g->cell_height * (NUM_ROWS / 3.0f);
+  al_draw_text(font, color, x, y, ALLEGRO_ALIGN_CENTRE, text);
+}
+
 int main()
 {
     al_init();
@@ -251,12 +260,11 @@ int main()
 
         if(redraw && al_is_event_queue_empty(queue)) {
           al_clear_to_color(al_map_rgb(0, 0, 0));
-          // al_draw_text(font, al_map_rgb(255, 255, 255), 0, 0, 0, "Hello world!");
 
           if (app.state == STATE_GAME) {
             draw_game(&app.game, &g);
           } else if (app.state == STATE_MENU) {
-            // TODO
+            draw_menu(font, &g);
           }
             
           al_flip_display();
