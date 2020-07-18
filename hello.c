@@ -14,6 +14,10 @@ typedef struct {
   int cell_width;
   int cell_height;
 
+  int screen_width;
+  int screen_height;
+
+  ALLEGRO_FONT* font;
   ALLEGRO_COLOR snake_color;
   ALLEGRO_COLOR apple_color;
 } gfx_config;
@@ -181,13 +185,13 @@ void draw_game(game_state* game, gfx_config* g) {
   draw_cell(game->apple.row, game->apple.col, g, g->apple_color);
 }
 
-void draw_menu(ALLEGRO_FONT* font, gfx_config* g) {
+void draw_menu(gfx_config* g) {
   const char* text = "This is the menu!";
   ALLEGRO_COLOR color = al_map_rgb(255, 255, 255);
 
-  int x = g->cell_width * (NUM_COLS / 2.0f);
-  int y = g->cell_height * (NUM_ROWS / 3.0f);
-  al_draw_text(font, color, x, y, ALLEGRO_ALIGN_CENTRE, text);
+  int x = g->screen_width / 2.0f;
+  int y = g->screen_height / 3.0f;
+  al_draw_text(g->font, color, x, y, ALLEGRO_ALIGN_CENTRE, text);
 }
 
 int main()
@@ -211,8 +215,11 @@ int main()
     ALLEGRO_EVENT event;
 
     gfx_config g = {0};
+    g.screen_width = al_get_display_width(disp);
+    g.screen_height = al_get_display_height(disp);
     g.cell_width = al_get_display_width(disp) / NUM_COLS;
     g.cell_height = al_get_display_height(disp) / NUM_ROWS;
+    g.font = font;
     g.snake_color = al_map_rgb(0, 255, 50);
     g.apple_color = al_map_rgb(255, 0, 50);
 
@@ -264,7 +271,7 @@ int main()
           if (app.state == STATE_GAME) {
             draw_game(&app.game, &g);
           } else if (app.state == STATE_MENU) {
-            draw_menu(font, &g);
+            draw_menu(&g);
           }
             
           al_flip_display();
