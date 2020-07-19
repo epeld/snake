@@ -77,7 +77,7 @@ void draw_game(game_state* game, gfx_config* g, double current_time) {
   draw_cell(game->apple.row, game->apple.col, g, g->apple_color);
 
   double count_down = calculate_count_down(game, current_time);
-  if (-2 < count_down) {
+  if (-COUNT_DOWN_LINGER_TIME < count_down) {
     const char* text = get_count_down_text(count_down);
     ALLEGRO_COLOR color = al_map_rgb(255, 255, 0);
     int x = g->screen_width / 2.0f;

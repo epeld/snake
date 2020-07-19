@@ -1,6 +1,7 @@
 #pragma once
 
 #define GAME_COUNT_DOWN 3
+#define COUNT_DOWN_LINGER_TIME 2
 
 #define MAX_SNAKE_PARTS 200
 #define MAX_PENDING_DIRECTIONS 10
