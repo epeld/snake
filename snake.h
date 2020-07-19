@@ -1,5 +1,7 @@
 #pragma once
 
+#define GAME_COUNT_DOWN 3
+
 #define MAX_SNAKE_PARTS 200
 #define MAX_PENDING_DIRECTIONS 10
 
@@ -29,7 +31,9 @@ typedef struct {
 typedef struct game_state_struct {
   snake_part apple;
   snake_info snake;
+  double started;
 } game_state;
 
 void push_direction_change(snake_info* snake, SNAKE_DIRECTION direction);
-void update_game(game_state* game);
+void update_game(game_state* game, double current_time);
+double calculate_count_down(game_state* game, double current_time);

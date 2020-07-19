@@ -89,10 +89,19 @@ void update_snake(snake_info* snake) {
   }
 }
 
-void update_game(game_state* game) {
-  if (game->apple.row == game->snake.parts[0].row && game->apple.col == game->snake.parts[0].col) {
+double calculate_count_down(game_state* game, double current_time) {
+  double time = GAME_COUNT_DOWN - (current_time - game->started);
+  return time;
+}
+
+void update_game(game_state* game, double current_time) {
+  if (0 < calculate_count_down(game, current_time)) {
+    // Noop
+  } else {
+    if (game->apple.row == game->snake.parts[0].row && game->apple.col == game->snake.parts[0].col) {
     randomize_position(&game->apple);
     grow_snake(&game->snake);
   }
   update_snake(&game->snake);
+  }
 }

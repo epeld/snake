@@ -52,17 +52,42 @@ int handle_game_input(game_state* game, ALLEGRO_EVENT* event) {
   }
 }
 
-void draw_game(game_state* game, gfx_config* g) {
+const char* get_count_down_text(double time_remaining) {
+  if (time_remaining < 1.0) {
+    return "Go!";
+  }
+  if (time_remaining < 2.0) {
+    return "1";
+  }
+  if (time_remaining < 3.0) {
+    return "2";
+  }
+  if (time_remaining < 4.0) {
+    return "3";
+  }
+  return "Waiting..";
+}
+
+void draw_game(game_state* game, gfx_config* g, double current_time) {
   for (int i = 0; i < game->snake.tail_length; i++) {
     snake_part* current = game->snake.parts + i;
     draw_cell(current->row, current->col, g, g->snake_color);
   }
 
   draw_cell(game->apple.row, game->apple.col, g, g->apple_color);
+
+  double count_down = calculate_count_down(game, current_time);
+  if (-2 < count_down) {
+    const char* text = get_count_down_text(count_down);
+    ALLEGRO_COLOR color = al_map_rgb(255, 255, 0);
+    int x = g->screen_width / 2.0f;
+    int y = g->screen_height / 3.0f;
+    al_draw_text(g->font, color, x, y, ALLEGRO_ALIGN_CENTRE, text);
+  }
 }
 
 void draw_menu(gfx_config* g) {
-  const char* text = "This is the menu!";
+  const char* text = "Press any key to play!";
   ALLEGRO_COLOR color = al_map_rgb(255, 255, 255);
 
   int x = g->screen_width / 2.0f;
@@ -119,9 +144,9 @@ int main()
         if(event.type == ALLEGRO_EVENT_TIMER) {
           if (event.timer.source == timer) {
             if (app.state == STATE_GAME) {
-              update_game(&app.game);
+              update_game(&app.game, al_get_time());
             } else if (app.state == STATE_MENU) {
-              // TODO
+              //
             }
             redraw = true;
           } else {
@@ -129,13 +154,14 @@ int main()
             break;
           }
         } else if (event.type == ALLEGRO_EVENT_KEY_DOWN) {
+          if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
+            break;
+          }
           if (app.state == STATE_GAME) {
             handle_game_input(&app.game, &event);
           } else if (app.state == STATE_MENU) {
-            // TODO
-          }
-          if (event.keyboard.keycode == ALLEGRO_KEY_ESCAPE) {
-            break;
+            app.state = STATE_GAME;
+            app.game.started = al_get_time();
           }
         } else if (event.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
           break;
@@ -145,7 +171,7 @@ int main()
           al_clear_to_color(al_map_rgb(0, 0, 0));
 
           if (app.state == STATE_GAME) {
-            draw_game(&app.game, &g);
+            draw_game(&app.game, &g, al_get_time());
           } else if (app.state == STATE_MENU) {
             draw_menu(&g);
           }
